@@ -1,45 +1,51 @@
-import React, { useState, useEffect } from 'react';
-import './App.css'; // Import your CSS file
+import React, { PureComponent } from 'react';
+import { PieChart, Pie, Sector, Cell, ResponsiveContainer } from 'recharts';
 
-function App() {
-  const [isMobile, setIsMobile] = useState(false);
+const data = [
+  { name: 'Group A', value: 400 },
+  { name: 'Group B', value: 300 },
+  { name: 'Group C', value: 300 },
+  { name: 'Group D', value: 200 },
+];
 
-  // Check the device width and update the state
-  const checkScreenWidth = () => {
-    setIsMobile(window.innerWidth <= 768); // You can adjust the breakpoint as needed
-  };
+const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042'];
 
-  useEffect(() => {
-    // Initial check
-    checkScreenWidth();
-
-    // Attach event listener to window resize
-    window.addEventListener('resize', checkScreenWidth);
-
-    // Cleanup
-    return () => {
-      window.removeEventListener('resize', checkScreenWidth);
-    };
-  }, []);
+const RADIAN = Math.PI / 180;
+const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+  const x = cx + radius * Math.cos(-midAngle * RADIAN);
+  const y = cy + radius * Math.sin(-midAngle * RADIAN);
 
   return (
-    <div className={`container ${isMobile ? 'mobile' : 'desktop'}`}>
-      {/* Render sidebar or navbar based on isMobile */}
-      {isMobile ? (
-        <nav className="navbar">
-          {/* Navbar content */}
-        </nav>
-      ) : (
-        <aside className="sidebar">
-          {/* Sidebar content */}
-        </aside>
-      )}
-
-      <main className="content">
-        {/* Main content */}
-      </main>
-    </div>
+    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
+      {`${(percent * 100).toFixed(0)}%`}
+    </text>
   );
-}
+};
 
-export default App;
+export default class Example extends PureComponent {
+  static demoUrl = 'https://codesandbox.io/s/pie-chart-with-customized-label-dlhhj';
+
+  render() {
+    return (
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart width={400} height={400}>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            labelLine={false}
+            label={renderCustomizedLabel}
+            outerRadius={80}
+            fill="#8884d8"
+            dataKey="value"
+          >
+            {data.map((entry, index) => (
+              <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+            ))}
+          </Pie>
+        </PieChart>
+      </ResponsiveContainer>
+    );
+  }
+}
